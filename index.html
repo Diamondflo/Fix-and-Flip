@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Fix & Flip Kalkulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --accent:#00C853; }
+  body{background:#000;color:#fff;font-family:Arial;margin:0;padding:20px;}
+  .container{max-width:500px;margin:0 auto;}
+  h1{color:var(--accent);text-align:center;margin:0 0 10px;}
+  .metric{text-align:center}
+  .metric .value{font-size:48px;font-weight:bold}
+  label{display:flex;justify-content:space-between;align-items:center;margin-top:24px;font-size:14px}
+  input[type=number]{width:120px;background:#1e1e1e;border:none;border-radius:30px;padding:6px 16px;color:#fff;text-align:center}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .badge{background:#1e1e1e;border-radius:30px;padding:6px 20px;margin-left:8px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Fix & Flip</h1>
+  <div class="metric">
+    <div>Marge</div>
+    <div id="marginPercent" class="value">–39,29 %</div>
+    <div id="marginEuro" style="color:#aaa;">–66.800 €</div>
+  </div>
+  <div id="rows"></div>
+</div>
+
+<script>
+const rows=[['Kaufpreis',210000,0,1000000],
+            ['Kaufnebenkosten',16800,0,200000],
+            ['Sanierungskosten',10000,0,500000],
+            ['Sonstige Kosten',0,0,200000],
+            ['Verkaufspreis',170000,0,2000000]];
+const fmt=n=>n.toLocaleString('de-DE');
+const rowsDiv=document.getElementById('rows');
+
+rows.forEach((r,i)=>{
+  const [label,val,min,max]=r;
+  const wrap=document.createElement('div');
+  wrap.innerHTML=`<label>${label}
+      <input type=number id=in${i} value=${val} min=${min} max=${max}>
+      <span class=badge id=badge${i}>${fmt(val)}</span></label>`;
+  const slider=document.createElement('input');
+  slider.type='range';slider.min=min;slider.max=max;slider.step=1000;slider.value=val;
+  slider.oninput=()=>sync(i,parseInt(slider.value));
+  wrap.appendChild(slider);
+  rowsDiv.appendChild(wrap);
+  document.getElementById('in'+i).onchange=e=>sync(i,parseInt(e.target.value||0));
+});
+function sync(idx,v){
+  rows[idx][1]=v;
+  document.getElementById('in'+idx).value=v;
+  document.getElementById('badge'+idx).textContent=fmt(v);
+  document.querySelectorAll('input[type=range]')[idx].value=v;
+  calc();
+}
+function calc(){
+  const total=rows[0][1]+rows[1][1]+rows[2][1]+rows[3][1];
+  const sale=rows[4][1];
+  const diff=sale-total;
+  document.getElementById('marginPercent').textContent=(diff/total*100).toFixed(2)+' %';
+  document.getElementById('marginEuro').textContent=diff.toLocaleString('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:0});
+}
+calc();
+</script>
+</body>
+</html>
