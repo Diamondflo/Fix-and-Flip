@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Fix & Flip Kalkulator (Demo)</title>
+<style>
+    body { background:#000; color:#fff; font-family:Arial,Helvetica,sans-serif; margin:0; padding:20px;}
+    .container { max-width:500px; margin:0 auto;}
+    h1 { color:#FFD600; text-align:center; margin-top:0;}
+    .tab { display:inline-block; width:48%; padding:10px 0; text-align:center; border:2px solid #FFD600; border-radius:30px 30px 0 0;}
+    .tab.active { background:#FFD600; color:#000;}
+    .metric { text-align:center; }
+    .metric .value { font-size:48px; font-weight:bold;}
+    .badge { background:#1e1e1e; border-radius:30px; padding:6px 20px; }
+    label { display:flex; justify-content:space-between; margin-top:25px; font-size:14px;}
+    input[type='range'] { width:100%; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>NLC</h1>
+  <div>
+    <div class="tab">Buy & Hold</div><div class="tab active">Fix & Flip</div>
+  </div>
+  <div class="metric">
+    <div>Marge</div>
+    <div class="value" id="marginPercent">-39,29 %</div>
+    <div id="marginEuro" style="color:#aaa;">-66.800,00 €</div>
+  </div>
+  <div id="sliders"></div>
+</div>
+<script>
+const slidersData = [
+  {label:'Kaufpreis', value:210000, min:0, max:1000000},
+  {label:'Kaufnebenkosten', value:16800, min:0, max:200000},
+  {label:'Sanierungskosten', value:10000, min:0, max:500000},
+  {label:'Sonstige Kosten', value:0, min:0, max:200000},
+  {label:'Verkaufspreis', value:170000, min:0, max:2000000}
+];
+const slidersDiv = document.getElementById('sliders');
+const format = (x)=> x.toLocaleString('de-DE');
+slidersData.forEach((s,idx)=>{
+  const wrapper = document.createElement('div');
+  const label = document.createElement('label');
+  label.innerHTML = `<span>${s.label}</span><span class="badge" id="badge${idx}">${format(s.value)}</span>`;
+  const slider = document.createElement('input');
+  slider.type = 'range'; slider.min=s.min; slider.max=s.max; slider.value=s.value; slider.step=1000;
+  slider.oninput = ()=>{ s.value = parseInt(slider.value); document.getElementById('badge'+idx).innerText=format(s.value); calc();};
+  wrapper.appendChild(label); wrapper.appendChild(slider); slidersDiv.appendChild(wrapper);
+});
+function calc(){
+  const totalCost = slidersData[0].value + slidersData[1].value + slidersData[2].value + slidersData[3].value;
+  const sale = slidersData[4].value;
+  const marginEuro = sale - totalCost;
+  const marginPercent = (marginEuro/totalCost)*100;
+  document.getElementById('marginPercent').innerText = marginPercent.toFixed(2)+' %';
+  const euroFormatted = (marginEuro).toLocaleString('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:0});
+  document.getElementById('marginEuro').innerText = euroFormatted;
+  document.getElementById('marginEuro').style.color = marginEuro>=0? '#0f0':'#aaa';
+  document.getElementById('marginPercent').style.color = marginEuro>=0? '#0f0':'#fff';
+}
+calc();
+</script>
+</body>
+</html>
